@@ -97,8 +97,8 @@ async function run() {
       const email = req.query?.email;
       const sort = req.query?.sort;
       const search = req.query?.search;
-
-      // console.log(search);
+      const min = parseInt(req?.query.min);
+      const max = parseInt(req?.query.max);
 
       let query = {};
       let sortQuery = {};
@@ -112,8 +112,15 @@ async function run() {
       if (search) {
         query.location = { $regex: search, $options: "i" };
       }
-      const cursor = jobsCollection.find(query);
-      const result = await cursor.sort(sortQuery).toArray();
+
+      if (min && max) {
+        query = {
+          "salaryRange.min": { $gte: min },
+          "salaryRange.max": { $lte: max },
+        };
+      }
+      const cursor = jobsCollection.find(query).sort(sortQuery);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
